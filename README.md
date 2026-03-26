@@ -2,7 +2,7 @@
 
 ### ⚙️ 기술 스택
 - Java 17
-- Spring Boot 4.0.3
+- Spring Boot 4.0.3 
 
 ### 📋 Commit Message Convention
 |   Gitmoji   |    Tag     | Description |
