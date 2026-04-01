@@ -4,5 +4,5 @@ import com.project.likelion14thbe.domain.member.service.command.MemberCommandSer
 import org.springframework.stereotype.Service;
 
 @Service
-public class ProductCommandServiceImpl implements MemberCommandService {
+public class ProductCommandServiceImpl implements ProductCommandService {
 }
