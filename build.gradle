@@ -28,6 +28,9 @@ dependencies {
 	// Spring Web
 	implementation 'org.springframework.boot:spring-boot-starter-webmvc'
 
+	// Spring Data JPA
+	implementation 'org.springframework.data:spring-data-jpa'
+
 	// Test
 	testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
