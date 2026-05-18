@@ -8,6 +8,7 @@ import com.project.likelion14thbe.global.security.handler.CustomLogoutHandler;
 import com.project.likelion14thbe.global.security.handler.JwtAccessDeniedHandler;
 import com.project.likelion14thbe.global.security.handler.JwtAuthenticationEntryPoint;
 import com.project.likelion14thbe.global.security.jwt.JwtUtil;
+import com.project.likelion14thbe.global.security.token.TokenInvalidationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -37,7 +38,7 @@ public class SecurityConfig {
     private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     private final CustomLogoutHandler customLogoutHandler;
-    private final com.project.likelion14thbe.global.security.token.TokenInvalidationService tokenInvalidationService;
+    private final TokenInvalidationService tokenInvalidationService;
 
     // 인증 없이 접근 허용할 URL
     private final String[] allowUrl = {

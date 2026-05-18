@@ -2,6 +2,7 @@ package com.project.likelion14thbe.global.security.handler;
 
 import com.project.likelion14thbe.domain.auth.repository.TokenRepository;
 import com.project.likelion14thbe.global.security.jwt.JwtUtil;
+import com.project.likelion14thbe.global.security.token.TokenInvalidationService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +18,7 @@ public class CustomLogoutHandler implements LogoutHandler {
 
     private final JwtUtil jwtUtil;
     private final TokenRepository tokenRepository;
-    private final com.project.likelion14thbe.global.security.token.TokenInvalidationService tokenInvalidationService;
+    private final TokenInvalidationService tokenInvalidationService;
 
     @Override
     public void logout(
