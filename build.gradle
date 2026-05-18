@@ -63,7 +63,8 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
 	// Testcontainers (통합 테스트용 실제 Redis)
-	testImplementation 'org.testcontainers:junit-jupiter'
+	testImplementation 'org.springframework.boot:spring-boot-testcontainers'
+	testImplementation 'org.testcontainers:testcontainers'
 
 	// Spring Security
 	implementation 'org.springframework.boot:spring-boot-starter-security'
