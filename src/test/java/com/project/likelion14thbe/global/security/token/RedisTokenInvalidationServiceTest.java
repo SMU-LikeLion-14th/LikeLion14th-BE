@@ -71,4 +71,20 @@ class RedisTokenInvalidationServiceTest {
 
         assertThat(service.isInvalidated("kim@test.com", 1L)).isFalse();
     }
+
+    @Test
+    void isInvalidated_failsOpen_whenCutoffValueIsCorrupt() {
+        when(valueOps.get("auth:invalidate-before:kim@test.com")).thenReturn("not-a-number");
+
+        assertThat(service.isInvalidated("kim@test.com", 1L)).isFalse();
+    }
+
+    @Test
+    void invalidateUser_doesNotRethrow_whenRedisThrows() {
+        org.mockito.Mockito.doThrow(new org.springframework.dao.QueryTimeoutException("redis down"))
+                .when(valueOps).set(anyString(), anyString(), any(java.time.Duration.class));
+
+        // fail-open: must return normally, not propagate
+        service.invalidateUser("kim@test.com");
+    }
 }

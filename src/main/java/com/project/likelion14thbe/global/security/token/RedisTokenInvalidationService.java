@@ -53,6 +53,9 @@ public class RedisTokenInvalidationService implements TokenInvalidationService {
             // 후속 관측성 phase: Redis 불가 시 메트릭 카운터 hook
             log.warn("[ TokenInvalidation ] 컷오프 조회 실패(fail-open) : {} : {}", email, e.getMessage());
             return false;
+        } catch (NumberFormatException e) {
+            log.warn("[ TokenInvalidation ] 컷오프 값 파싱 실패(fail-open) : {} : {}", email, e.getMessage());
+            return false;
         }
     }
 }
