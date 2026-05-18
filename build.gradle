@@ -62,9 +62,10 @@ dependencies {
 	// Redis (토큰 무효화 컷오프 저장)
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
-	// Testcontainers (통합 테스트용 실제 Redis)
+	// Testcontainers (통합 테스트용 실제 Redis/MySQL)
 	testImplementation 'org.springframework.boot:spring-boot-testcontainers'
 	testImplementation 'org.testcontainers:testcontainers'
+	testImplementation 'org.testcontainers:testcontainers-mysql:2.0.3'
 
 	// Spring Security
 	implementation 'org.springframework.boot:spring-boot-starter-security'
