@@ -51,13 +51,13 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
 
         } catch (ExpiredJwtException e) {
-            logger.warn("[ JwtAuthorizationFilter ] accessToken 이 만료되었습니다.");
+            log.warn("[ JwtAuthorizationFilter ] accessToken 이 만료되었습니다.");
             HttpResponseUtil.setErrorResponse(response, AuthErrorCode.EXPIRED_TOKEN);
         } catch (InvalidatedTokenException e) {
-            logger.warn("[ JwtAuthorizationFilter ] 무효화된 토큰입니다.");
+            log.warn("[ JwtAuthorizationFilter ] 무효화된 토큰입니다.");
             HttpResponseUtil.setErrorResponse(response, AuthErrorCode.INVALIDATED_TOKEN);
         } catch (SecurityException e) {
-            logger.warn("[ JwtAuthorizationFilter ] 잘못된 토큰입니다.");
+            log.warn("[ JwtAuthorizationFilter ] 잘못된 토큰입니다.");
             HttpResponseUtil.setErrorResponse(response, AuthErrorCode.INVALID_TOKEN);
         }
     }
