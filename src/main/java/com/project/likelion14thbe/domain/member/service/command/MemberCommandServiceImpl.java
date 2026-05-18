@@ -7,6 +7,7 @@ import com.project.likelion14thbe.domain.member.entity.Member;
 import com.project.likelion14thbe.domain.member.exception.MemberErrorCode;
 import com.project.likelion14thbe.domain.member.exception.MemberException;
 import com.project.likelion14thbe.domain.member.repository.MemberRepository;
+import com.project.likelion14thbe.global.security.token.TokenInvalidationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,7 @@ public class MemberCommandServiceImpl implements MemberCommandService {
 
     private final MemberRepository memberRepository;
     private final BCryptPasswordEncoder passwordEncoder;
+    private final TokenInvalidationService tokenInvalidationService;
 
     @Override
     public MemberResDTO.SignUpResDTO signUp(MemberReqDTO.SignUpReqDTO request) {
@@ -37,6 +39,7 @@ public class MemberCommandServiceImpl implements MemberCommandService {
                 .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
 
         member.updatePassword(passwordEncoder.encode(dto.password()));
+        tokenInvalidationService.invalidateUser(email);
     }
 
     @Override
@@ -45,5 +48,6 @@ public class MemberCommandServiceImpl implements MemberCommandService {
                 .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
 
         member.softDelete();
+        tokenInvalidationService.invalidateUser(email);
     }
 }
