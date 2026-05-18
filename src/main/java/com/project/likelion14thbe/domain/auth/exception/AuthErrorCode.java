@@ -32,7 +32,8 @@ public enum AuthErrorCode implements BaseErrorCode {
     UNSUPPORTED_OAUTH_PROVIDER(HttpStatus.BAD_REQUEST, "AUTH400_3", "지원하지 않는 소셜 로그인 제공자입니다."),
     OAUTH_EMAIL_NOT_PROVIDED(HttpStatus.BAD_REQUEST, "AUTH400_4", "소셜 계정에서 이메일을 제공받지 못했습니다."),
     OAUTH_EMAIL_CONFLICT(HttpStatus.CONFLICT, "AUTH409_1", "이미 동일 이메일로 가입된 계정이 있습니다."),
-    OAUTH_ACCESS_DENIED(HttpStatus.UNAUTHORIZED, "AUTH401_5", "소셜 로그인 동의가 거부되었습니다.");
+    OAUTH_ACCESS_DENIED(HttpStatus.UNAUTHORIZED, "AUTH401_5", "소셜 로그인 동의가 거부되었습니다."),
+    INVALIDATED_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH401_6", "로그아웃되었거나 무효화된 토큰입니다.");
 
     private final HttpStatus httpStatus;
     private final String code;

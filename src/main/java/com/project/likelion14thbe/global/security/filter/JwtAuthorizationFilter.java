@@ -3,6 +3,8 @@ package com.project.likelion14thbe.global.security.filter;
 import com.project.likelion14thbe.domain.auth.exception.AuthErrorCode;
 import com.project.likelion14thbe.domain.member.enums.Role;
 import com.project.likelion14thbe.global.security.jwt.JwtUtil;
+import com.project.likelion14thbe.global.security.token.InvalidatedTokenException;
+import com.project.likelion14thbe.global.security.token.TokenInvalidationService;
 import com.project.likelion14thbe.global.security.userdetails.CustomUserDetails;
 import com.project.likelion14thbe.global.security.utils.HttpResponseUtil;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -25,6 +27,7 @@ import java.io.IOException;
 public class JwtAuthorizationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
+    private final TokenInvalidationService tokenInvalidationService;
 
     @Override
     protected void doFilterInternal(
@@ -50,6 +53,9 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
         } catch (ExpiredJwtException e) {
             logger.warn("[ JwtAuthorizationFilter ] accessToken 이 만료되었습니다.");
             HttpResponseUtil.setErrorResponse(response, AuthErrorCode.EXPIRED_TOKEN);
+        } catch (InvalidatedTokenException e) {
+            logger.warn("[ JwtAuthorizationFilter ] 무효화된 토큰입니다.");
+            HttpResponseUtil.setErrorResponse(response, AuthErrorCode.INVALIDATED_TOKEN);
         } catch (SecurityException e) {
             logger.warn("[ JwtAuthorizationFilter ] 잘못된 토큰입니다.");
             HttpResponseUtil.setErrorResponse(response, AuthErrorCode.INVALID_TOKEN);
@@ -63,6 +69,13 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
         log.info("[ JwtAuthorizationFilter ] Access Token 유효성 검증 성공.");
 
         String email = jwtUtil.getEmail(accessToken);
+
+        long issuedAt = jwtUtil.getIssuedAt(accessToken);
+        if (tokenInvalidationService.isInvalidated(email, issuedAt)) {
+            log.info("[ JwtAuthorizationFilter ] 무효화된 토큰 거부 : {}", email);
+            throw new InvalidatedTokenException();
+        }
+
         Role role = jwtUtil.getRoles(accessToken);
 
         CustomUserDetails customUserDetails = new CustomUserDetails(email, null, role);
