@@ -61,6 +61,22 @@ public class JwtUtil {
         }
     }
 
+    // JWT 토큰의 발급 시각(iat)을 epoch millis로 추출
+    public long getIssuedAt(String token) {
+        log.info("[ JwtUtil ] 토큰에서 발급 시각을 추출합니다.");
+        try {
+            return Jwts.parser()
+                    .verifyWith(secretKey)
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload()
+                    .getIssuedAt()
+                    .getTime();
+        } catch (Exception e) {
+            throw new SecurityException("잘못된 토큰입니다.");
+        }
+    }
+
     // JWT 토큰에서 사용자 권한(role) 추출
     public Role getRoles(String token) {
         log.info("[ JwtUtil ] 토큰에서 권한을 추출합니다.");
