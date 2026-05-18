@@ -25,6 +25,15 @@ public class RedisTokenInvalidationService implements TokenInvalidationService {
         this.refreshExpMs = refreshExpMs;
     }
 
+    /**
+     * 컷오프를 millis로 기록한다. 단, JWT iat는 RFC 7519상 초 단위라
+     * getIssuedAt()은 항상 1000ms 배수다. 따라서 로그아웃과 같은 wall-clock
+     * 초 안에 재로그인하면, 새 토큰 iat(= 그 초의 millis)가 cutoff보다 작아
+     * 최대 약 1초 동안 정상 토큰이 401로 거부될 수 있다. 이는 의도된 수용
+     * 한계다: 보안상 안전한 방향(과다 무효화)으로 실패하며, 로그아웃된
+     * 토큰이 살아남지 않는다. 완전 해소는 per-token jti(후속 S3 범위)로만
+     * 가능하다.
+     */
     @Override
     public void invalidateUser(String email) {
         String key = KEY_PREFIX + email;

@@ -21,6 +21,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
+// 회귀 시뮬레이션 ABC: JwtAuthorizationFilter의 isInvalidated 분기를
+// `if (false && ...)`로 무력화하면 아래 두 401 단언이 RED가 되고,
+// byte-identical 복원 시 GREEN으로 돌아옴을 개발 및 리뷰에서 독립 재현 확인.
+// (무력화 편집은 커밋하지 않는다.)
 class TokenInvalidationE2ETest extends RedisTestContainer {
 
     private static final String EMAIL_1 = "e2e@test.com";
