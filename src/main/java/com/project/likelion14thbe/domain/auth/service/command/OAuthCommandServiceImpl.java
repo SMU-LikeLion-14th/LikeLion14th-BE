@@ -18,7 +18,8 @@ import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -40,13 +41,15 @@ public class OAuthCommandServiceImpl implements OAuthCommandService {
     private final MemberRepository memberRepository;
     private final JwtUtil jwtUtil;
     private final BCryptPasswordEncoder passwordEncoder;
+    private final TransactionTemplate transactionTemplate;
 
     public OAuthCommandServiceImpl(
             List<OAuthStrategy> strategies,
             SocialAccountRepository socialAccountRepository,
             MemberRepository memberRepository,
             JwtUtil jwtUtil,
-            BCryptPasswordEncoder passwordEncoder
+            BCryptPasswordEncoder passwordEncoder,
+            PlatformTransactionManager transactionManager
     ) {
         for (OAuthStrategy s : strategies) {
             strategyMap.put(s.getProvider(), s);
@@ -55,6 +58,8 @@ public class OAuthCommandServiceImpl implements OAuthCommandService {
         this.memberRepository = memberRepository;
         this.jwtUtil = jwtUtil;
         this.passwordEncoder = passwordEncoder;
+        // 자기호출 한계를 피하기 위해 프록시 어드바이스 대신 TransactionTemplate 으로 명시 트랜잭션을 연다
+        this.transactionTemplate = new TransactionTemplate(transactionManager);
     }
 
     @Override
@@ -112,18 +117,20 @@ public class OAuthCommandServiceImpl implements OAuthCommandService {
         return JwtDTO.builder().accessToken(access).refreshToken(refresh).build();
     }
 
-    @Transactional
-    protected Member loginOrSignup(OAuthUserInfo userInfo) {
-        return socialAccountRepository
-                .findByProviderAndProviderId(userInfo.provider(), userInfo.providerId())
-                .map(SocialAccount::getMember)
-                .orElseGet(() -> signup(userInfo));
+    private Member loginOrSignup(OAuthUserInfo userInfo) {
+        return transactionTemplate.execute(status ->
+                socialAccountRepository
+                        .findByProviderAndProviderId(userInfo.provider(), userInfo.providerId())
+                        .map(SocialAccount::getMember)
+                        .orElseGet(() -> signup(userInfo))
+        );
     }
 
     private Member signup(OAuthUserInfo userInfo) {
-        memberRepository.findByEmailAndNotDeleted(userInfo.email()).ifPresent(m -> {
+        // Member.email 은 전역 unique 라 soft-delete 회원도 충돌 대상이다(일반 가입과 통일)
+        if (memberRepository.existsByEmail(userInfo.email())) {
             throw new AuthException(AuthErrorCode.OAUTH_EMAIL_CONFLICT);
-        });
+        }
         // 스키마 호환용 비밀번호. 사용자가 아는 값이 아니며 일반 로그인 불가.
         String schemaCompatPassword = passwordEncoder.encode(UUID.randomUUID().toString());
         Member member = memberRepository.save(OAuthConverter.toMember(userInfo, schemaCompatPassword));

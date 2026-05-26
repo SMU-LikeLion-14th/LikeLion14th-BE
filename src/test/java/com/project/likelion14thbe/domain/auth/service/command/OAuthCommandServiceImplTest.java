@@ -16,6 +16,8 @@ import jakarta.servlet.http.HttpSession;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.SimpleTransactionStatus;
 
 import java.util.List;
 import java.util.Optional;
@@ -52,9 +54,11 @@ class OAuthCommandServiceImplTest {
         when(jwtUtil.createJwtAccessToken(any())).thenReturn("ACCESS");
         when(jwtUtil.createJwtRefreshToken(any())).thenReturn("REFRESH");
 
+        PlatformTransactionManager txManager = mock(PlatformTransactionManager.class);
+        when(txManager.getTransaction(any())).thenReturn(new SimpleTransactionStatus());
         service = new OAuthCommandServiceImpl(
                 List.of(kakaoStrategy), socialAccountRepository, memberRepository,
-                jwtUtil, new BCryptPasswordEncoder());
+                jwtUtil, new BCryptPasswordEncoder(), txManager);
     }
 
     private HttpSession sessionWithState(String state) {
@@ -92,7 +96,7 @@ class OAuthCommandServiceImplTest {
     void 소셜계정도_email회원도_없으면_신규가입한다() {
         when(socialAccountRepository.findByProviderAndProviderId(Provider.KAKAO, "123"))
                 .thenReturn(Optional.empty());
-        when(memberRepository.findByEmailAndNotDeleted("user@kakao.com")).thenReturn(Optional.empty());
+        when(memberRepository.existsByEmail("user@kakao.com")).thenReturn(false);
         when(memberRepository.save(any(Member.class)))
                 .thenAnswer(inv -> inv.getArgument(0));
 
@@ -104,11 +108,9 @@ class OAuthCommandServiceImplTest {
 
     @Test
     void 소셜계정은_없는데_같은email_로컬회원이_있으면_충돌예외() {
-        Member existing = Member.builder().name("기존").email("user@kakao.com")
-                .password("local").role(Role.ROLE_USER).build();
         when(socialAccountRepository.findByProviderAndProviderId(Provider.KAKAO, "123"))
                 .thenReturn(Optional.empty());
-        when(memberRepository.findByEmailAndNotDeleted("user@kakao.com")).thenReturn(Optional.of(existing));
+        when(memberRepository.existsByEmail("user@kakao.com")).thenReturn(true);
 
         assertThatThrownBy(() ->
                 service.handleCallback(Provider.KAKAO, "code", "s", null, sessionWithState("s")))
