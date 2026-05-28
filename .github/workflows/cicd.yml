@@ -3,7 +3,7 @@ name: ec2에 배포하기
 # main 브랜치에 push가 발생했을 때
 on:
   push:
-    branches: main
+    branches: feat/#106
 
 env:
   DOCKER_IMAGE_NAME: olongun/likelion
